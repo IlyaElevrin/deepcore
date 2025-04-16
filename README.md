@@ -9,4 +9,6 @@ __init__.py --  Main library file (all classes here)
 setup.py -- File for installation
 
 # Guide
+```
 pip install -e /path/deeplinks -- local installation
+```
