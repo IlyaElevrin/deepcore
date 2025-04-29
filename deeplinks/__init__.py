@@ -2,6 +2,7 @@
 deeplinks
 classes:
 - SyntheticGenerator: https://github.com/IlyaElevrin/synthetic_data_generation
+- sort_duoblet
 """
 
 import pandas as pd
@@ -12,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 __version__ = "0.1.0"
-__all__ = ['SyntheticGenerator', 'LinkAnalyzer', 'DataValidator']  # Exported classes
+__all__ = ['SyntheticGenerator', 'sort_duoblet']  # Exported classes
 
 class SyntheticDataGenerator:
     def __init__(self, model_path="deeplinks/ctgan_model.pkl"):
@@ -93,9 +94,30 @@ class SyntheticDataGenerator:
                 raise RuntimeError("Failed to generate data after retraining")
 
 
-# --- LinkAnalyzer (future) ---
-class LinkAnalyzer:
-    
-    @staticmethod
-    def find_links(data, source_col, target_col):
-        return data[[source_col, target_col]].drop_duplicates()
+#-------------------------------------------------------------------------
+
+def sort_duoblet(df):
+    # 1. closed links (from == to)
+    closed = df[df['from'] == df['to']].copy()
+    closed_sorted = closed.sort_values(by='from').reset_index(drop=True)
+
+    # set of closed nodes
+    closed_nodes = set(closed['from'])
+
+    # 2. links between closed nodes (from and to in closed_nodes, but from != to)
+    between_closed = df[
+        (df['from'].isin(closed_nodes)) & 
+        (df['to'].isin(closed_nodes)) & 
+        (df['from'] != df['to'])
+    ].copy()
+    between_closed_sorted = between_closed.sort_values(by=['from', 'to']).reset_index(drop=True)
+
+    # 3. other links (at least one node not in closed_nodes)
+    other = df[
+        ~(df['from'].isin(closed_nodes) & df['to'].isin(closed_nodes))
+    ].copy()
+    other_sorted = other.sort_values(by=['from', 'to']).reset_index(drop=True)
+
+    # combine all the pieces
+    result = pd.concat([closed_sorted, between_closed_sorted, other_sorted], ignore_index=True)
+    return result
