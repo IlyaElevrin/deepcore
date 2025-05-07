@@ -1,0 +1,176 @@
+# Getting Started
+
+## Installation
+
+DeepCore can be installed using pip:
+
+```bash
+pip install deepcore
+```
+
+## Basic Usage
+
+### Synthetic Data Generation
+
+DeepCore's `SyntheticGenerator` class allows you to generate synthetic data based on your input data:
+
+```python
+import pandas as pd
+from deepcore import SyntheticDataGenerator
+
+# Sample input data with subject-verb-object relationships
+data = {
+    'subject': ['user1', 'user2', 'user1', 'user3', 'user2'],
+    'verb': ['purchased', 'viewed', 'viewed', 'purchased', 'viewed'],
+    'object': ['laptop', 'phone', 'phone', 'tablet', 'laptop']
+}
+df = pd.DataFrame(data)
+
+# Initialize the generator
+generator = SyntheticDataGenerator()
+
+# Generate synthetic data
+synthetic_data = generator.generate(df, num_rows=1000)
+print(synthetic_data.head())
+```
+
+### Relationship Data Processing
+
+The `sort_duoblet` function helps organize relationship data in a structured format:
+
+```python
+import pandas as pd
+from deepcore import sort_duoblet
+
+# Sample relationship data
+data = {
+    'from': [6, 4, 3, 2, 2, 2, 4, 1],
+    'to': [5, 4, 3, 2, 1, 3, 2, 1],
+    'interaction': ['click', 'view', 'purchase', 'view', 'click', 'view', 'purchase', 'click']
+}
+df = pd.DataFrame(data)
+
+# Sort the relationship data
+sorted_df = sort_duoblet(df)
+print(sorted_df)
+
+# The result will be sorted with:
+# 1. Closed links (from == to) first
+# 2. Links between closed nodes next
+# 3. All other links last
+```
+
+### Key Features
+
+1. **Synthetic Data Generation**:
+   - Automatically handles categorical and numerical data
+   - Preserves the statistical properties of the original data
+   - Supports custom model training and saving
+
+2. **Relationship Data Processing**:
+   - Sorts relationship data into meaningful groups
+   - Preserves all original data while adding structure
+   - Works with additional columns beyond just 'from' and 'to'
+
+3. **Easy Integration**:
+   - Works with pandas DataFrames
+   - Simple, intuitive API
+   - Minimal dependencies
+```
+
+<img src="pages_img/visualize_link_doublet.png" alt="neural" style={{ borderRadius: '13px' }} />
+
+### Doublet Graph Visualization 
+
+Doublet links are useful for showing complex relationships:
+
+```python
+import deepvisual as dv
+import pandas as pd
+
+# Create a sample dataframe with doublet relationships
+data = {
+    'from': [1, 2, 3, 4, 2, 2, 4, 6],
+    'to': [1, 2, 3, 4, 1, 3, 2, 5]
+}
+df = pd.DataFrame(data)
+
+# Create the visualization
+visualize_doblet_graph(
+    df,
+    edge_color="white", # Arrow color
+    node_text_color="white", # The color of the node labels
+    background_color="black", # Background color
+    figsize=(10, 8), # Graph size
+    curvature=0.3, # Level of line curvature
+    seed=42,
+    loop_radius=0.6, # Loop radius
+    arrow_style="->,head_length=0.7,head_width=0.5", # Arrow style (e.g. -> or -|> )
+    connection_style="arc3",
+    node_text_visible=True # Label designation (True or False)
+)
+```
+
+<img src="pages_img/visualize_doblet_graph.png" alt="neural" style={{ borderRadius: '13px' }} />
+
+### Triplet visualization by graph
+
+A triplet graph shows relationships between three elements.
+in it the first column accesses the third creating a link to the name of the second column. This is much clearer on the example of the Sub-Verb-Object transaction table.
+Here's how to create one:
+
+```python
+import deepvisual as dv
+import pandas as pd
+
+# Create a sample dataframe with triplet relationships
+df = pd.DataFrame({
+    'source': ['A', 'B', 'C'],
+    'relation': ['relates to', 'connects', 'links'],
+    'target': ['B', 'C', 'A']
+})
+
+# Create the visualization
+dv.visualize_triplet_graph(
+    df, # Dataframe
+    edge_color="blue", # Arrow color
+    node_color="lightgreen", # Node color
+    node_text_color="black", # The color of the node labels
+    background_color="white", # Background color
+    figsize=(10, 8), # Graph size
+    title='', # Name of the chart
+    color_title='black' # Color of the chart name
+)
+```
+
+<img src="pages_img/visualize_triplet_graph.png" alt="neural" style={{ borderRadius: '13px' }} />
+
+## Customization
+
+All visualization functions support extensive customization:
+
+- Colors for nodes, edges, text, and background
+- Figure size and layout
+- Edge styles and curvatures
+- Node labels and text visibility
+- Arrow styles and sizes
+
+See the [API Reference](/api-reference) for complete details on all customization options.
+
+## Best Practices
+
+1. **Data Preparation**:
+   - Ensure your data is in the correct format (DataFrame)
+   - Clean and preprocess your data before visualization
+   - Use meaningful labels for nodes and edges
+
+2. **Visualization**:
+   - Choose appropriate colors for good contrast
+   - Use consistent styling across related visualizations
+   - Consider the size and complexity of your graph
+
+3. **Performance**:
+   - For large graphs, consider simplifying the visualization
+   - Use appropriate figure sizes for your data
+   - Test different layouts for optimal readability 
+

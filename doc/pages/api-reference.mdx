@@ -1,0 +1,122 @@
+# API Reference
+
+## SyntheticDataGenerator
+
+```python
+class SyntheticDataGenerator:
+    def __init__(self, model_path="deeplinks/ctgan_model.pkl"):
+        """
+        Initialize the SyntheticDataGenerator.
+        
+        Args:
+            model_path (str): Path to save/load the trained model. Defaults to "deeplinks/ctgan_model.pkl"
+        """
+        self.model_path = model_path
+        self.model = None
+        self.metadata = None
+        self.original_columns = []
+
+    def generate(self, input_data, num_rows=100, retrain_on_error=True):
+        """
+        Generate synthetic data based on input data.
+        
+        Args:
+            input_data (pandas.DataFrame): Input data containing 'subject', 'verb', 'object' columns
+            num_rows (int): Number of rows to generate (default: 100)
+            retrain_on_error (bool): Whether to retrain the model if generation fails (default: True)
+            
+        Returns:
+            pandas.DataFrame: Generated synthetic data with the same structure as input
+        """
+        # Method implementation...
+        pass
+```
+
+### Methods
+
+#### `__init__(model_path="deeplinks/ctgan_model.pkl")`
+Initialize the SyntheticDataGenerator.
+
+**Parameters:**
+- `model_path` (str): Path to save/load the trained model. Defaults to "deeplinks/ctgan_model.pkl"
+
+#### `generate(input_data, num_rows=100, retrain_on_error=True)`
+Generate synthetic data based on input data.
+
+**Parameters:**
+- `input_data` (pandas.DataFrame): Input data containing 'subject', 'verb', 'object' columns
+- `num_rows` (int): Number of rows to generate (default: 100)
+- `retrain_on_error` (bool): Whether to retrain the model if generation fails (default: True)
+
+**Returns:**
+pandas.DataFrame: Generated synthetic data with the same structure as input
+
+## sort_duoblet
+
+```python
+def sort_duoblet(df):
+    """
+    Sort relationship data into a structured format.
+    
+    Args:
+        df (pandas.DataFrame): DataFrame with 'from' and 'to' columns
+        
+    Returns:
+        pandas.DataFrame: Sorted DataFrame with the following order:
+            1. Rows where 'from' equals 'to' (closed links)
+            2. Rows where both 'from' and 'to' are in the closed links set
+            3. All other rows
+    """
+    # Function implementation...
+    pass
+```
+
+### Parameters
+
+- `df` (pandas.DataFrame): Input DataFrame containing relationship data with 'from' and 'to' columns
+
+### Returns
+
+- pandas.DataFrame: Sorted DataFrame with the following order:
+  1. Rows where 'from' equals 'to' (closed links)
+  2. Rows where both 'from' and 'to' are in the closed links set
+  3. All other rows
+- `edge_color`: Arrow color (default: "black")
+- `inter_edge_color`: Color of links between links color (default: "blue")
+- `background_color`: Background color (default: "white")
+- `title`: Name of the chart (default: "")
+- `color_title`: Color of the chart name (default: "black")
+
+## visualize_doblet_graph
+
+```python
+def visualize_doblet_graph(
+    df,
+    edge_color="gray",
+    node_text_color="black", 
+    background_color="white",
+    figsize=(10, 8),
+    curvature=0.3,
+    seed=42,
+    loop_radius=0.8,
+    arrow_style="->,head_length=0.7,head_width=0.5",
+    connection_style="arc3",
+    node_text_visible=True
+)
+```
+
+Visualizes duplet links between nodes.
+
+### Parameters
+
+- `df`: DataFrame containing duplet relationships
+- `edge_color`: Color of the edges (default: "gray")
+- `node_text_color`: Color of the node text (default: "black")
+- `background_color`: Background color of the plot (default: "white")
+- `figsize`: Figure size as (width, height) tuple (default: (10, 8))
+- `curvature`: Curvature of the edges (default: 0.3)
+- `seed`: Random seed for reproducibility (default: 42)
+- `loop_radius`: Radius for self-loops (default: 0.8)
+- `arrow_style`: Style of the arrows (default: "->,head_length=0.7,head_width=0.5")
+- `connection_style`: Style of the connections (default: "arc3")
+- `node_text_visible`: Whether to show node labels (default: True)

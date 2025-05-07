@@ -1,0 +1,196 @@
+# Examples
+
+## Synthetic Data Generation
+
+Generate synthetic e-commerce transaction data:
+
+```python
+import pandas as pd
+from deepcore import SyntheticDataGenerator
+
+# Sample input data with e-commerce transactions
+input_data = pd.DataFrame({
+    'subject': [f'user_{i%1000}' for i in range(1000)],
+    'verb': ['purchased' if i % 5 != 0 else 'viewed' for i in range(1000)],
+    'object': ['laptop', 'phone', 'tablet', 'headphones', 'monitor'] * 200,
+    'price': [999.99, 799.99, 349.99, 199.99, 249.99] * 200,
+    'category': ['electronics'] * 1000
+})
+
+# Initialize and generate synthetic data
+generator = SyntheticDataGenerator()
+synthetic_data = generator.generate(input_data, num_rows=5000)
+
+print(f"Generated {len(synthetic_data)} synthetic transactions")
+print(synthetic_data.head())
+```
+
+## Relationship Data Processing
+
+Process and analyze social network data:
+
+```python
+import pandas as pd
+from deepcore import sort_duoblet
+
+# Sample social network data
+df = pd.DataFrame({
+    'from': ['user1', 'user2', 'user3', 'user4', 'user1', 'user2', 'user1', 'user5'],
+    'to': ['user1', 'user2', 'user3', 'user4', 'user2', 'user3', 'user3', 'user6'],
+    'interaction': ['self', 'self', 'self', 'self', 'message', 'like', 'comment', 'follow']
+})
+
+# Sort the relationship data
+sorted_df = sort_duoblet(df)
+print("Original data:")
+print(df)
+print("\nSorted data:")
+print(sorted_df)
+```
+
+## Advanced Data Processing
+
+Combine synthetic data generation with relationship processing:
+
+```python
+import pandas as pd
+from deepcore import SyntheticDataGenerator, sort_duoblet
+
+# Generate synthetic relationship data
+input_data = pd.DataFrame({
+    'from': [f'node_{i%10}' for i in range(100)],
+    'to': [f'node_{(i+1)%10}' for i in range(100)],
+    'weight': [i % 5 + 1 for i in range(100)]
+})
+
+# Add some self-references
+for i in range(0, 100, 10):
+    input_data = input_data.append({'from': f'node_{i%10}', 'to': f'node_{i%10}', 'weight': 5}, ignore_index=True)
+
+# Sort the relationships
+sorted_df = sort_duoblet(input_data)
+
+
+# Generate synthetic data for each node
+node_data = pd.DataFrame({
+    'node_id': [f'node_{i}' for i in range(10)],
+    'type': ['user' if i < 7 else 'service' for i in range(10)],
+    'creation_date': pd.date_range('2020-01-01', periods=10, freq='D')
+})
+
+# Generate synthetic attributes for nodes
+generator = SyntheticDataGenerator()
+synthetic_attributes = generator.generate(node_data, num_rows=50)
+
+# Merge the data
+result = pd.merge(
+    sorted_df,
+    synthetic_attributes.rename(columns={'node_id': 'from'}),
+    on='from',
+    how='left'
+)
+
+print("Processed relationship data with synthetic attributes:")
+print(result.head())
+```
+
+Visualize a complex workflow with self-referential steps:
+
+```python
+import deepvisual as dv
+import pandas as pd
+import deepcore as dc
+
+# Sample workflow data
+df = pd.DataFrame({
+    'from': ['Start', 'Process', 'Review', 'Process', 'End'],
+    'to': ['Process', 'Review', 'Process', 'End', 'Start']
+})
+
+# Let's sort using the deepcore library
+dc.sort_duoblet(df)
+
+# Create a doublet link visualization
+dv.visualize_link_doublet(
+    df,
+    loop_color='red',
+    edge_color='black',
+    inter_edge_color='blue',
+    title='Workflow Process'
+)
+```
+
+## Custom Styling Example
+
+Create a highly customized visualization:
+
+```python
+import deepvisual as dv
+import pandas as pd
+
+# Sample data
+df = pd.DataFrame({
+    'from': ['A', 'B', 'C', 'D'],
+    'to': ['B', 'C', 'D', 'A']
+})
+
+# Create a customized visualization
+dv.visualize_doblet_graph(
+    df,
+    edge_color="purple",
+    node_text_color="white",
+    background_color="darkgray",
+    figsize=(12, 10),
+    curvature=0.3,
+    arrow_style="->,head_length=0.8,head_width=0.6",
+    connection_style="arc3,rad=0.2"
+)
+```
+
+## Interactive Visualization
+
+Create an interactive visualization with Jupyter:
+
+```python
+import deepvisual as dv
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Sample data
+df = pd.DataFrame({
+    'from': ['Input', 'Process', 'Output'],
+    'to': ['Process', 'Output', 'Input']
+})
+
+# Create the visualization
+fig = dv.visualize_link_doublet(
+    df,
+    loop_color='orange',
+    edge_color='blue',
+    inter_edge_color='green',
+    title='Interactive Process'
+)
+
+# Add interactivity
+plt.ion()  # Turn on interactive mode
+plt.show()
+
+# The plot will remain interactive in Jupyter
+```
+
+## Best Practices for Examples
+
+1. **Data Preparation**:
+   - Use meaningful labels
+   - Structure data appropriately
+   - Clean and validate data
+
+2. **Visualization**:
+   - Choose appropriate colors
+   - Use consistent styling
+   - Consider the audience
+
+3. **Documentation**:
+   - Add clear comments
+   - Explain the context
+   - Show expected output 
