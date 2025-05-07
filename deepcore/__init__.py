@@ -1,5 +1,5 @@
 """
-deeplinks
+deepcore
 classes:
 - SyntheticGenerator: https://github.com/IlyaElevrin/synthetic_data_generation
 - sort_duoblet
