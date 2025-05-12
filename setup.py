@@ -8,6 +8,8 @@ setup(
         'pandas>=1.0',
         'numpy>=1.0',
         'sdv>=1.0',
+        'networkx>=1.0',
+        'community>=1.0',
     ],
     author="Deep Found",
     description="Library for datascience and for data manipulation",

@@ -3,6 +3,7 @@ deepcore
 classes:
 - SyntheticGenerator: https://github.com/IlyaElevrin/synthetic_data_generation
 - sort_duoblet
+- cluster_links
 """
 
 import pandas as pd
@@ -10,10 +11,12 @@ import numpy as np
 from sdv.single_table import CTGANSynthesizer
 from sdv.metadata import SingleTableMetadata
 import warnings
+import networkx as nx
+from community import community_louvain
 warnings.filterwarnings('ignore')
 
 __version__ = "0.1.0"
-__all__ = ['SyntheticGenerator', 'sort_duoblet']  # Exported classes
+__all__ = ['SyntheticGenerator', 'sort_duoblet', 'cluster_links']  # Exported classes
 
 class SyntheticDataGenerator:
     def __init__(self, model_path="deeplinks/ctgan_model.pkl"):
@@ -121,3 +124,40 @@ def sort_duoblet(df):
     # combine all the pieces
     result = pd.concat([closed_sorted, between_closed_sorted, other_sorted], ignore_index=True)
     return result
+
+#-------------------------------------------------------------------------
+
+def cluster_links(df):
+    """
+    link clustering by Louvain's algorithm.
+    
+    parameters:
+        df: DataFrame with 'from' and 'to' columns.
+        
+    returns:
+        A dictionary of the form {'from→to': cluster_id}.
+    """
+    # create unique link identifiers
+    df['link'] = df['from'].astype(str) + '→' + df['to'].astype(str)
+    
+    # Строим граф связей
+    G = nx.Graph()
+    G.add_nodes_from(df['link'])
+    
+    # add edges between links if they have common nodes
+    for i in range(len(df)):
+        for j in range(i + 1, len(df)):
+            # decompose the links into components
+            a_from, a_to = df.iloc[i]['from'], df.iloc[i]['to']
+            b_from, b_to = df.iloc[j]['from'], df.iloc[j]['to']
+            
+            # links are connected if they have at least one common node
+            if ({a_from, a_to} & {b_from, b_to}):
+                link_a = df.iloc[i]['link']
+                link_b = df.iloc[j]['link']
+                G.add_edge(link_a, link_b)
+    
+    # applying Louvain's algorithm
+    partition = community_louvain.best_partition(G)
+    
+    return partition
