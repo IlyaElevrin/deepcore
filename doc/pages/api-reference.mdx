@@ -1,122 +1,329 @@
 # API Reference
 
+This page provides comprehensive documentation for all classes and functions in the DeepCore library.
+
 ## SyntheticDataGenerator
 
-```python
-class SyntheticDataGenerator:
-    def __init__(self, model_path="deeplinks/ctgan_model.pkl"):
-        """
-        Initialize the SyntheticDataGenerator.
-        
-        Args:
-            model_path (str): Path to save/load the trained model. Defaults to "deeplinks/ctgan_model.pkl"
-        """
-        self.model_path = model_path
-        self.model = None
-        self.metadata = None
-        self.original_columns = []
+The `SyntheticDataGenerator` class is used to generate synthetic data based on input data using CTGAN (Conditional Tabular Generative Adversarial Network) models.
 
-    def generate(self, input_data, num_rows=100, retrain_on_error=True):
-        """
-        Generate synthetic data based on input data.
-        
-        Args:
-            input_data (pandas.DataFrame): Input data containing 'subject', 'verb', 'object' columns
-            num_rows (int): Number of rows to generate (default: 100)
-            retrain_on_error (bool): Whether to retrain the model if generation fails (default: True)
-            
-        Returns:
-            pandas.DataFrame: Generated synthetic data with the same structure as input
-        """
-        # Method implementation...
-        pass
+### Constructor
+
+```python
+SyntheticDataGenerator(model_path="deeplinks/ctgan_model.pkl")
+```
+
+Initialize the SyntheticDataGenerator.
+
+**Parameters:**
+- `model_path` (str): Path to save/load the trained model. Defaults to `"deeplinks/ctgan_model.pkl"`
+
+**Example:**
+```python
+from deepcore import SyntheticDataGenerator
+
+generator = SyntheticDataGenerator(model_path="my_model.pkl")
 ```
 
 ### Methods
 
-#### `__init__(model_path="deeplinks/ctgan_model.pkl")`
-Initialize the SyntheticDataGenerator.
-
-**Parameters:**
-- `model_path` (str): Path to save/load the trained model. Defaults to "deeplinks/ctgan_model.pkl"
-
 #### `generate(input_data, num_rows=100, retrain_on_error=True)`
+
 Generate synthetic data based on input data.
 
 **Parameters:**
-- `input_data` (pandas.DataFrame): Input data containing 'subject', 'verb', 'object' columns
-- `num_rows` (int): Number of rows to generate (default: 100)
-- `retrain_on_error` (bool): Whether to retrain the model if generation fails (default: True)
+- `input_data` (pandas.DataFrame): Input data containing `'subject'`, `'verb'`, `'object'` columns (required)
+- `num_rows` (int): Number of rows to generate. Defaults to `100`
+- `retrain_on_error` (bool): Whether to retrain the model if generation fails. Defaults to `True`
 
 **Returns:**
-pandas.DataFrame: Generated synthetic data with the same structure as input
+- `pandas.DataFrame`: Generated synthetic data with the same structure as input
+
+**Raises:**
+- `ValueError`: If required columns (`'subject'`, `'verb'`, `'object'`) are missing
+- `RuntimeError`: If data generation fails after retraining
+
+**Example:**
+```python
+import pandas as pd
+from deepcore import SyntheticDataGenerator
+
+data = pd.DataFrame({
+    'subject': ['user1', 'user2', 'user3'],
+    'verb': ['purchased', 'viewed', 'purchased'],
+    'object': ['laptop', 'phone', 'tablet']
+})
+
+generator = SyntheticDataGenerator()
+synthetic_data = generator.generate(data, num_rows=1000)
+print(synthetic_data.head())
+```
+
+**How it works:**
+1. Validates that input data contains required columns (`'subject'`, `'verb'`, `'object'`)
+2. Enriches data with dummy columns and features for better model training
+3. Either loads an existing model or trains a new one
+4. Generates synthetic data using the CTGAN model
+5. Restores original column structure from one-hot encoded features
+6. If generation fails and `retrain_on_error=True`, retrains the model and tries again
+
+---
 
 ## sort_duoblet
 
-```python
-def sort_duoblet(df):
-    """
-    Sort relationship data into a structured format.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame with 'from' and 'to' columns
-        
-    Returns:
-        pandas.DataFrame: Sorted DataFrame with the following order:
-            1. Rows where 'from' equals 'to' (closed links)
-            2. Rows where both 'from' and 'to' are in the closed links set
-            3. All other rows
-    """
-    # Function implementation...
-    pass
-```
-
-### Parameters
-
-- `df` (pandas.DataFrame): Input DataFrame containing relationship data with 'from' and 'to' columns
-
-### Returns
-
-- pandas.DataFrame: Sorted DataFrame with the following order:
-  1. Rows where 'from' equals 'to' (closed links)
-  2. Rows where both 'from' and 'to' are in the closed links set
-  3. All other rows
-- `edge_color`: Arrow color (default: "black")
-- `inter_edge_color`: Color of links between links color (default: "blue")
-- `background_color`: Background color (default: "white")
-- `title`: Name of the chart (default: "")
-- `color_title`: Color of the chart name (default: "black")
-
-## visualize_doblet_graph
+Sort relationship data into a structured format based on node relationships.
 
 ```python
-def visualize_doblet_graph(
-    df,
-    edge_color="gray",
-    node_text_color="black", 
-    background_color="white",
-    figsize=(10, 8),
-    curvature=0.3,
-    seed=42,
-    loop_radius=0.8,
-    arrow_style="->,head_length=0.7,head_width=0.5",
-    connection_style="arc3",
-    node_text_visible=True
-)
+sort_duoblet(df)
 ```
 
-Visualizes duplet links between nodes.
+**Parameters:**
+- `df` (pandas.DataFrame): Input DataFrame containing relationship data with `'from'` and `'to'` columns
 
-### Parameters
+**Returns:**
+- `pandas.DataFrame`: Sorted DataFrame with the following order:
+  1. **Closed links**: Rows where `'from'` equals `'to'` (self-loops), sorted by `'from'`
+  2. **Links between closed nodes**: Rows where both `'from'` and `'to'` are nodes that have self-loops, sorted by `['from', 'to']`
+  3. **Other links**: All remaining links, sorted by `['from', 'to']`
 
-- `df`: DataFrame containing duplet relationships
-- `edge_color`: Color of the edges (default: "gray")
-- `node_text_color`: Color of the node text (default: "black")
-- `background_color`: Background color of the plot (default: "white")
-- `figsize`: Figure size as (width, height) tuple (default: (10, 8))
-- `curvature`: Curvature of the edges (default: 0.3)
-- `seed`: Random seed for reproducibility (default: 42)
-- `loop_radius`: Radius for self-loops (default: 0.8)
-- `arrow_style`: Style of the arrows (default: "->,head_length=0.7,head_width=0.5")
-- `connection_style`: Style of the connections (default: "arc3")
-- `node_text_visible`: Whether to show node labels (default: True)
+**Example:**
+```python
+import pandas as pd
+from deepcore import sort_duoblet
+
+data = pd.DataFrame({
+    'from': [1, 2, 3, 4, 2, 2, 4, 6],
+    'to': [1, 2, 3, 4, 1, 3, 2, 5],
+    'weight': [1, 1, 1, 1, 2, 3, 2, 1]
+})
+
+sorted_df = sort_duoblet(data)
+print(sorted_df)
+```
+
+**Output:**
+```
+   from  to  weight
+0     1   1       1    # Closed link (from == to)
+1     2   2       1    # Closed link (from == to)
+2     3   3       1    # Closed link (from == to)
+3     4   4       1    # Closed link (from == to)
+4     2   1       2    # Link between closed nodes
+5     2   3       3    # Link between closed nodes
+6     4   2       2    # Link between closed nodes
+7     6   5       1    # Other link
+```
+
+**Use cases:**
+- Organizing graph data for better analysis
+- Prioritizing self-referential relationships
+- Structuring associative data models
+
+---
+
+## cluster_links
+
+Cluster links using the Louvain community detection algorithm based on shared nodes.
+
+```python
+cluster_links(df)
+```
+
+**Parameters:**
+- `df` (pandas.DataFrame): Input DataFrame with `'from'` and `'to'` columns representing links
+
+**Returns:**
+- `dict`: A dictionary mapping link identifiers (format: `'from→to'`) to cluster IDs (integers)
+
+**Example:**
+```python
+import pandas as pd
+from deepcore import cluster_links
+
+data = pd.DataFrame({
+    'from': [1, 2, 3, 4, 2],
+    'to': [2, 3, 4, 5, 4]
+})
+
+clusters = cluster_links(data)
+print(clusters)
+```
+
+**Output:**
+```python
+{
+    '1→2': 0,
+    '2→3': 0,
+    '3→4': 0,
+    '4→5': 0,
+    '2→4': 0
+}
+```
+
+**How it works:**
+1. Creates unique identifiers for each link in the format `'from→to'`
+2. Builds a graph where nodes are links
+3. Connects links that share at least one common node (either `'from'` or `'to'`)
+4. Applies the Louvain community detection algorithm to identify clusters
+5. Returns cluster assignments for each link
+
+**Use cases:**
+- Finding communities in relationship data
+- Grouping related links together
+- Network analysis of associative structures
+
+---
+
+## adjacency_to_links
+
+Convert an adjacency matrix to associative links format.
+
+```python
+adjacency_to_links(adjacency_matrix, node_labels=None, include_zeros=False)
+```
+
+**Parameters:**
+- `adjacency_matrix` (numpy.ndarray or pandas.DataFrame): The adjacency matrix representing connections between nodes. Must be a square matrix.
+- `node_labels` (list, optional): List of node labels. If `None`, uses indices (0, 1, 2, ...). If `adjacency_matrix` is a DataFrame, column names are used by default.
+- `include_zeros` (bool): If `True`, includes links with zero weight. Defaults to `False`.
+
+**Returns:**
+- `pandas.DataFrame`: DataFrame with `'from'` and `'to'` columns representing the links, sorted with non-self-loops prioritized.
+
+**Raises:**
+- `ValueError`: If the adjacency matrix is not square
+- `ValueError`: If `node_labels` length doesn't match matrix dimensions
+
+**Example:**
+```python
+import numpy as np
+import pandas as pd
+from deepcore import adjacency_to_links
+
+# Using numpy array
+matrix = np.array([
+    [0, 1, 0],
+    [1, 0, 1],
+    [0, 1, 0]
+])
+
+links = adjacency_to_links(matrix, node_labels=['A', 'B', 'C'])
+print(links)
+```
+
+**Output:**
+```
+  from to
+0    A  B
+1    B  A
+2    B  C
+3    C  B
+```
+
+**Example with DataFrame:**
+```python
+import pandas as pd
+from deepcore import adjacency_to_links
+
+# Using DataFrame with named nodes
+matrix_df = pd.DataFrame([
+    [0, 1, 0],
+    [1, 0, 1],
+    [0, 1, 0]
+], columns=['A', 'B', 'C'], index=['A', 'B', 'C'])
+
+links = adjacency_to_links(matrix_df)
+print(links)
+```
+
+**Use cases:**
+- Converting traditional graph representations to associative format
+- Transforming adjacency matrices from graph libraries
+- Data format conversion for associative data analysis
+
+---
+
+## links_to_adjacency
+
+Convert associative links to an adjacency matrix.
+
+```python
+links_to_adjacency(df, weight_column=None)
+```
+
+**Parameters:**
+- `df` (pandas.DataFrame): Input DataFrame with `'from'` and `'to'` columns representing links
+- `weight_column` (str, optional): Name of the column to use as edge weights. If `None`, uses `1` for all edges. Defaults to `None`.
+
+**Returns:**
+- `pandas.DataFrame`: Adjacency matrix as a DataFrame with node labels as both index and columns
+
+**Raises:**
+- `ValueError`: If DataFrame doesn't contain `'from'` and `'to'` columns
+
+**Example:**
+```python
+import pandas as pd
+from deepcore import links_to_adjacency
+
+# Simple unweighted links
+data = pd.DataFrame({
+    'from': ['A', 'A', 'B'],
+    'to': ['B', 'C', 'C']
+})
+
+adjacency = links_to_adjacency(data)
+print(adjacency)
+```
+
+**Output:**
+```
+     A    B    C
+A  0.0  1.0  1.0
+B  0.0  0.0  1.0
+C  0.0  0.0  0.0
+```
+
+**Example with weights:**
+```python
+import pandas as pd
+from deepcore import links_to_adjacency
+
+# Weighted links
+data = pd.DataFrame({
+    'from': ['A', 'A', 'B'],
+    'to': ['B', 'C', 'C'],
+    'weight': [5, 3, 2]
+})
+
+adjacency = links_to_adjacency(data, weight_column='weight')
+print(adjacency)
+```
+
+**Output:**
+```
+     A    B    C
+A  0.0  5.0  3.0
+B  0.0  0.0  2.0
+C  0.0  0.0  0.0
+```
+
+**Use cases:**
+- Converting associative links to traditional graph format
+- Preparing data for graph algorithms that require adjacency matrices
+- Integration with libraries like NetworkX or graph visualization tools
+
+---
+
+## Summary
+
+The DeepCore library provides the following functionality:
+
+| Function/Class | Purpose |
+|----------------|---------|
+| `SyntheticDataGenerator` | Generate synthetic data using CTGAN models |
+| `sort_duoblet` | Sort relationship data by link structure |
+| `cluster_links` | Cluster links using community detection |
+| `adjacency_to_links` | Convert adjacency matrix → links format |
+| `links_to_adjacency` | Convert links → adjacency matrix format |
+
+All functions are designed to work seamlessly with pandas DataFrames for easy integration into data science workflows.
