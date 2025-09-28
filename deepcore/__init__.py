@@ -199,10 +199,13 @@ def adjacency_to_links(adjacency_matrix, node_labels=None, include_zeros=False):
                 links.append({
                     'from': node_labels[i],
                     'to': node_labels[j],
-                    'weight': weight
                 })
+                
+    df = pd.DataFrame(links)
+                
+    df = df.iloc[df.apply(lambda x: (x['from'] != x['to'], x['from'], x['to']), axis=1).argsort()].reset_index(drop=True)
 
-    return pd.DataFrame(links)
+    return df
 
 #-------------------------------------------------------------------------
 
